@@ -6,4 +6,13 @@ assert.equal(c({...p,kind:'independent',monthly:5000,cost:1000}).declare,true);c
 const a=c({...p,monthly:500,currency:'USD'}),b=c({...p,monthly:450000});near(a.caused,b.caused);near(a.caused,1786629.12);
 near(c({...p,monthly:500,currency:'USD',withheld:a.caused+100}).balance,0);near(c({...p,monthly:500,currency:'USD',withheld:a.caused+100}).excess,100);
 assert.equal(c({...p,kind:'independent',monthly:10000,cost:10000}).declare,true);near(c({...p,kind:'independent',monthly:10000,cost:10000}).caused,0);count++;
-for(const bad of [{ut:0},{rate:0},{monthly:-1},{monthly:NaN},{kind:'independent',monthly:1,cost:2}]){assert.throws(()=>c({...p,...bad}));count++;}console.log(`${count} comprobaciones aprobadas.`);
+for(const bad of [{ut:0},{rate:0},{monthly:-1},{monthly:NaN},{kind:'independent',monthly:1,cost:2}]){assert.throws(()=>c({...p,...bad}));count++;}
+// Cargas familiares: 10 UT de rebaja adicional por cada carga.
+const inc3000=(3000+774)*43;near(c({...p,monthly:inc3000/12,dependents:2}).caused,(345-30)*43);near(c({...p,monthly:inc3000/12,dependents:2}).rebate,30);
+near(c({...p,monthly:inc3000/12,dependents:40}).caused,0);
+// Utilidades y bono vacacional suman al ingreso anual igual que otros ingresos.
+near(c({...p,monthly:1000,profit:3000,vacation:1500}).gross,c({...p,monthly:1000,extra:4500}).gross);near(c({...p,monthly:100,currency:'USD',profit:50,vacation:20}).gross,(1200+70)*900);
+// Tasa marginal y umbral del tramo de 34 %.
+near(c(p).marginal,0);near(c({...p,monthly:1774*43/12}).marginal,.06);near(c({...p,monthly:(1774*43+43)/12}).marginal,.09);near(c({...p,monthly:500,currency:'USD'}).marginal,.34);near(c(p).topBracketNet,6774*43);
+for(const bad of [{dependents:-1},{dependents:1.5},{profit:-1},{vacation:NaN}]){assert.throws(()=>c({...p,...bad}));count++;}
+console.log(`${count} comprobaciones aprobadas.`);
